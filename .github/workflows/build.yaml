@@ -11,7 +11,7 @@ jobs:
       - name: Cache Derived Data
         uses: actions/cache@master
         with:
-          path: .ios/cached_derived_data
+          path: ios/cached_derived_data
           key: ${{ runner.os }}-cached-derived-data-${{ hashFiles('**/Podfile.lock') }}
 
       - name: Cache Cocoapods dependencies
