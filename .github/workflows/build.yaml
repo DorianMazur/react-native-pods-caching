@@ -1,45 +1,44 @@
 name: Build IOS app
- 
+
 on:
- workflow_dispatch:
- 
+  workflow_dispatch:
+
 jobs:
- deploy:
-   runs-on: macos-13-xlarge
-   steps:
-    - uses: actions/checkout@v2
+  build:
+    runs-on: macos-13-xlarge
+    steps:
+      - uses: actions/checkout@v2
+      - name: Cache Derived Data
+        uses: actions/cache@master
+        with:
+          path: .ios/cached_derived_data
+          key: ${{ runner.os }}-cached-derived-data-${{ hashFiles('**/Podfile.lock') }}
 
-    - name: Cache Derived Data
-      uses: actions/cache@master
-      with:
-        path: .ios/cached_derived_data
-        key: ${{ runner.os }}-cached-derived-data-${{ hashFiles('**/Podfile.lock') }}
+      - name: Cache Cocoapods dependencies
+        uses: actions/cache@v3
+        with:
+          key: ${{ runner.os }}-cocoapods
+          path: ~/Library/Caches/CocoaPods
 
-    - name: Cache Cocoapods dependencies
-      uses: actions/cache@v3
-      with:
-        key: ${{ runner.os }}-cocoapods
-        path: ~/Library/Caches/CocoaPods
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: 'npm'
 
-    - uses: actions/setup-node@v3
-      with:
-        node-version: 18
-        cache: 'npm'
+      - name: Set up ruby env
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.2.2
+          bundler-cache: true
 
-    - name: Set up ruby env
-      uses: ruby/setup-ruby@v1
-      with:
-        ruby-version: 3.2.2
-        bundler-cache: true
-    
-    - name: Install packages
-      run: npm install
+      - name: Install packages
+        run: npm install
 
-    - name: Install Fastlane
-      run: cd ios && bundle install && cd ..
-    
-    - name: Install pods
-      run: cd ios && pod install && cd ..
-    
-     - name: Build app
-       run: cd ios && bundle exec fastlane ios build
+      - name: Install Fastlane
+        run: cd ios && bundle install && cd ..
+
+      - name: Install pods
+        run: cd ios && pod install && cd ..
+
+      - name: Build app
+        run: cd ios && bundle exec fastlane ios build
